@@ -1,4 +1,4 @@
-const { graphqlExpress } = require('apollo-server-express');
+const { ApolloServer, gql } = require('apollo-server-express');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -6,7 +6,7 @@ const { makeExecutableSchema } = require('graphql-tools');
 
 const port = process.env.PORT || 9900;
 
-const typeDefs = `
+const typeDefs = gql`
     type Query {
         message: String
     }
@@ -17,17 +17,11 @@ const resolvers = {
         message: () => 'Echo message'
     }
 };
-const schema = makeExecutableSchema({typeDefs, resolvers});
+const server = new ApolloServer({ typeDefs, resolvers });
 
 const app = express();
-app.use(cors(), bodyParser.json());
-app.use('/graphql', graphqlExpress({schema}));
-
-
-app.get('/', (req, res) => {
-    res.sendStatus(200);
-});
-
+const path = '/graphql';
+server.applyMiddleware({ app, path });
 
 app.listen(port, () => console.log(`Server is running at ${port}`));
 
